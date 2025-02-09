@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>My Spotify Profile</title>
+        <script src="src/script.js" type="module"></script>
+    </head>
+    <body>
+        <h1>Display your Spotify profile data</h1>
+        <section id="currently-playing">
+            <h2>Currently Playing</h2>
+            <p>Song: <span id="song-name"></span></p>
+            <p>Artist: <span id="artist-name"></span></p>
+            <p>Album: <span id="album-name"></span></p>
+            <img id="album-art" src="" alt="Album Art" />
+            <button id="blacklist-song">Blacklist Song</button>
+            <div id="blacklist-artists"></div>
+        </section>
+        <section id="blacklist">
+            <h2>Blacklisted Items</h2>
+            <ul id="blacklist-items"></ul>
+        </section>
+    </body>
+</html>
