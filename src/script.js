@@ -1,4 +1,4 @@
-const clientId = "3c334ae39e734129a8a0533019ac7225"; // Replace with your client ID
+const clientId = "3c334ae39e734129a8a0533019ac7225";
 const params = new URLSearchParams(window.location.search);
 const code = params.get("code");
 
@@ -17,10 +17,6 @@ function getStoredAccessToken() {
 }
 
 (async function init() {
-    const clientId = "3c334ae39e734129a8a0533019ac7225"; // Replace with your client ID
-    const params = new URLSearchParams(window.location.search);
-    const code = params.get("code");
-
     let accessToken = getStoredAccessToken();
 
     if (!accessToken) {
@@ -29,7 +25,6 @@ function getStoredAccessToken() {
             return;
         } else {
             accessToken = await getAccessToken(clientId, code);
-            // Clear the code parameter from URL
             window.history.replaceState(
                 {},
                 document.title,
@@ -39,7 +34,7 @@ function getStoredAccessToken() {
     }
 
     updateCurrentlyPlaying(accessToken);
-    setInterval(() => updateCurrentlyPlaying(accessToken), 5000); // Update every 5 seconds
+    setInterval(() => updateCurrentlyPlaying(accessToken), 5000);
     setupBlacklistButtons(accessToken);
     displayBlacklist();
 })();
@@ -47,9 +42,7 @@ function getStoredAccessToken() {
 export async function redirectToAuthCodeFlow(clientId) {
     const verifier = generateCodeVerifier(128);
     const challenge = await generateCodeChallenge(verifier);
-
     localStorage.setItem("verifier", verifier);
-
     const params = new URLSearchParams();
     params.append("client_id", clientId);
     params.append("response_type", "code");
@@ -60,7 +53,6 @@ export async function redirectToAuthCodeFlow(clientId) {
     );
     params.append("code_challenge_method", "S256");
     params.append("code_challenge", challenge);
-
     document.location = `https://accounts.spotify.com/authorize?${params.toString()}`;
 }
 
@@ -68,7 +60,6 @@ function generateCodeVerifier(length) {
     let text = "";
     let possible =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
     for (let i = 0; i < length; i++) {
         text += possible.charAt(Math.floor(Math.random() * possible.length));
     }
@@ -86,25 +77,20 @@ async function generateCodeChallenge(codeVerifier) {
 
 export async function getAccessToken(clientId, code) {
     const verifier = localStorage.getItem("verifier");
-
     const params = new URLSearchParams();
     params.append("client_id", clientId);
     params.append("grant_type", "authorization_code");
     params.append("code", code);
     params.append("redirect_uri", "http://localhost:5173/callback");
     params.append("code_verifier", verifier);
-
     const result = await fetch("https://accounts.spotify.com/api/token", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: params,
     });
-
     const data = await result.json();
     const access_token = data.access_token;
-    const expiresIn = data.expires_in; // in seconds
-
-    // Store the token with its expiry time
+    const expiresIn = data.expires_in;
     localStorage.setItem(
         "accessToken",
         JSON.stringify({
@@ -123,7 +109,6 @@ async function fetchCurrentlyPlaying(token) {
             headers: { Authorization: `Bearer ${token}` },
         }
     );
-
     if (result.status === 204 || result.status === 200) {
         return await result.json();
     } else {
@@ -133,24 +118,26 @@ async function fetchCurrentlyPlaying(token) {
 
 async function fetchBlacklist() {
     const blacklist = localStorage.getItem("blacklist");
-    return blacklist ? JSON.parse(blacklist) : { songs: [], artists: [] };
+    return blacklist
+        ? JSON.parse(blacklist)
+        : { songs: [], artists: [], albums: [] };
 }
 
 async function updateCurrentlyPlaying(token) {
     const currentlyPlaying = await fetchCurrentlyPlaying(token);
     const blacklist = await fetchBlacklist();
-
     if (currentlyPlaying && currentlyPlaying.item) {
         const songId = currentlyPlaying.item.id;
         const artistIds = currentlyPlaying.item.artists.map(
             (artist) => artist.id
         );
-
+        const albumId = currentlyPlaying.item.album.id;
         if (
             blacklist.songs.some((item) => item.id === songId) ||
             artistIds.some((id) =>
                 blacklist.artists.some((item) => item.id === id)
-            )
+            ) ||
+            blacklist.albums.some((item) => item.id === albumId)
         ) {
             if (songId !== last_skipped_song_id) {
                 last_skipped_song_id = songId;
@@ -166,11 +153,11 @@ async function updateCurrentlyPlaying(token) {
     }
 }
 
-// Update addToBlacklist to store an object with id and name.
 function addToBlacklist(type, id, name) {
     const blacklist = JSON.parse(localStorage.getItem("blacklist")) || {
         songs: [],
         artists: [],
+        albums: [],
     };
     if (!blacklist[type].some((item) => item.id === id)) {
         blacklist[type].push({ id, name });
@@ -178,11 +165,11 @@ function addToBlacklist(type, id, name) {
     }
 }
 
-// Update removeFromBlacklist to remove by object id.
 function removeFromBlacklist(type, id) {
     const blacklist = JSON.parse(localStorage.getItem("blacklist")) || {
         songs: [],
         artists: [],
+        albums: [],
     };
     blacklist[type] = blacklist[type].filter((item) => item.id !== id);
     localStorage.setItem("blacklist", JSON.stringify(blacklist));
@@ -201,7 +188,6 @@ function setupBlacklistButtons(token) {
             }
         });
     }
-
     const btnBlacklistArtists = document.getElementById("blacklist-artists");
     if (btnBlacklistArtists) {
         btnBlacklistArtists.addEventListener("click", async (event) => {
@@ -213,7 +199,6 @@ function setupBlacklistButtons(token) {
             }
         });
     }
-
     const btnRemoveBlacklistSong = document.getElementById(
         "remove-blacklist-song"
     );
@@ -227,7 +212,6 @@ function setupBlacklistButtons(token) {
             }
         });
     }
-
     const btnRemoveBlacklistArtist = document.getElementById(
         "remove-blacklist-artist"
     );
@@ -239,6 +223,18 @@ function setupBlacklistButtons(token) {
                     (artist) => artist.id
                 );
                 artistIds.forEach((id) => removeFromBlacklist("artists", id));
+                displayBlacklist();
+            }
+        });
+    }
+    const btnBlacklistAlbum = document.getElementById("blacklist-album");
+    if (btnBlacklistAlbum) {
+        btnBlacklistAlbum.addEventListener("click", async () => {
+            const currentlyPlaying = await fetchCurrentlyPlaying(token);
+            if (currentlyPlaying && currentlyPlaying.item) {
+                const albumId = currentlyPlaying.item.album.id;
+                const albumName = currentlyPlaying.item.album.name;
+                addToBlacklist("albums", albumId, albumName);
                 displayBlacklist();
             }
         });
@@ -264,7 +260,6 @@ function populateCurrentlyPlaying(currentlyPlaying) {
             currentlyPlaying.item.album.name;
         document.getElementById("album-art").src =
             currentlyPlaying.item.album.images[0].url;
-
         const blacklistArtistsDiv =
             document.getElementById("blacklist-artists");
         blacklistArtistsDiv.innerHTML = "";
@@ -272,7 +267,7 @@ function populateCurrentlyPlaying(currentlyPlaying) {
             const button = document.createElement("button");
             button.innerText = `Blacklist ${artist.name}`;
             button.dataset.artistId = artist.id;
-            button.dataset.artistName = artist.name; // Add artist name for later use.
+            button.dataset.artistName = artist.name;
             blacklistArtistsDiv.appendChild(button);
         });
     } else {
@@ -288,12 +283,11 @@ function displayBlacklist() {
     const blacklist = JSON.parse(localStorage.getItem("blacklist")) || {
         songs: [],
         artists: [],
+        albums: [],
     };
     const blacklistItems = document.getElementById("blacklist-items");
     blacklistItems.innerHTML = "";
-
     blacklist.songs.forEach((item) => {
-        // item = { id, name }
         const li = document.createElement("li");
         li.innerText = `Song: ${item.name} (ID: ${item.id})`;
         const button = document.createElement("button");
@@ -305,15 +299,25 @@ function displayBlacklist() {
         li.appendChild(button);
         blacklistItems.appendChild(li);
     });
-
     blacklist.artists.forEach((item) => {
-        // item = { id, name }
         const li = document.createElement("li");
         li.innerText = `Artist: ${item.name} (ID: ${item.id})`;
         const button = document.createElement("button");
         button.innerText = "Remove";
         button.addEventListener("click", () => {
             removeFromBlacklist("artists", item.id);
+            displayBlacklist();
+        });
+        li.appendChild(button);
+        blacklistItems.appendChild(li);
+    });
+    blacklist.albums.forEach((item) => {
+        const li = document.createElement("li");
+        li.innerText = `Album: ${item.name} (ID: ${item.id})`;
+        const button = document.createElement("button");
+        button.innerText = "Remove";
+        button.addEventListener("click", () => {
+            removeFromBlacklist("albums", item.id);
             displayBlacklist();
         });
         li.appendChild(button);
