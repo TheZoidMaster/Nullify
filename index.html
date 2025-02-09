@@ -2,27 +2,45 @@
 <html lang="en">
     <head>
         <meta charset="utf-8" />
-        <title>Nullify</title>
+        <title>nullify</title>
         <script src="src/script.js" type="module"></script>
+        <link rel="stylesheet" href="src/style.css">
     </head>
     <body>
-        <h1>
-            Block the sound of unwanted songs/artists from entering your ears
-        </h1>
-        <section id="currently-playing">
-            <h2>Currently Playing</h2>
-            <p>Song: <span id="song-name"></span></p>
-            <p>Artist: <span id="artist-name"></span></p>
-            <p>Album: <span id="album-name"></span></p>
-            <img id="album-art" src="" alt="Album Art" />
-            <button id="blacklist-song">Blacklist Song</button>
-            <button id="blacklist-album">Blacklist Album</button>
-
-            <div id="blacklist-artists"></div>
-        </section>
-        <section id="blacklist">
-            <h2>Blacklisted Items</h2>
-            <ul id="blacklist-items"></ul>
-        </section>
+        <header>
+            <span class="logo">nullify</span>
+        </header>
+        <nav></nav>
+        <main>
+            <section id="player">
+                <img id="album-art" draggable="false" src="" alt="Album Art" />
+            </section>
+            
+            <section id="currently-playing">
+                <span id="name"><span id="song-name"></span></span><br>
+                <span id="subname"><span id="album-name"></span> - <span id="artist-name"></span></span>
+                
+                <div id="blacklist-buttons">
+                    <button id="blacklist-song">Blacklist Song</button>
+                    <button id="blacklist-album">Blacklist Album</button>
+                    <button id="blacklist-artists">Blacklist Artists</button>
+                </div>
+            </section>
+            <section id="blacklist">
+                <div id="blacklist-items"></div>
+            </section>
+            <div>
+                <span class="title">Blacklist Artists</span>
+                <div id="blacklist-artists-list"></div>
+                <div id="artist-menu-buttons">
+                    <button id="artist-menu-all">Select All</button>
+                    <button id="artist-menu-done">Done</button>
+                </div>
+            </div>
+        </main>
+        <footer>
+            <span class="logo">nullify</span>
+            <span class="disclaimer">,    made for staying in your genre.</span>
+        </footer>
     </body>
 </html>

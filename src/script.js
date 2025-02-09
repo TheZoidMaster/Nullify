@@ -188,7 +188,7 @@ function setupBlacklistButtons(token) {
             }
         });
     }
-    const btnBlacklistArtists = document.getElementById("blacklist-artists");
+    const btnBlacklistArtists = document.getElementById("blacklist-artists-list");
     if (btnBlacklistArtists) {
         btnBlacklistArtists.addEventListener("click", async (event) => {
             if (event.target.tagName === "BUTTON") {
@@ -261,14 +261,16 @@ function populateCurrentlyPlaying(currentlyPlaying) {
         document.getElementById("album-art").src =
             currentlyPlaying.item.album.images[0].url;
         const blacklistArtistsDiv =
-            document.getElementById("blacklist-artists");
+            document.getElementById("blacklist-artists-list");
         blacklistArtistsDiv.innerHTML = "";
         currentlyPlaying.item.artists.forEach((artist) => {
             const button = document.createElement("button");
-            button.innerText = `Blacklist ${artist.name}`;
+            button.innerText = artist.name;
+
             button.dataset.artistId = artist.id;
             button.dataset.artistName = artist.name;
             blacklistArtistsDiv.appendChild(button);
+            blacklistArtistsDiv.appendChild(text);
         });
     } else {
         document.getElementById("song-name").innerText =
@@ -288,8 +290,14 @@ function displayBlacklist() {
     const blacklistItems = document.getElementById("blacklist-items");
     blacklistItems.innerHTML = "";
     blacklist.songs.forEach((item) => {
-        const li = document.createElement("li");
-        li.innerText = `Song: ${item.name} (ID: ${item.id})`;
+        const img = document.createElement("img");
+        img.draggable = false;
+        // img.src = item.album.images[0].url
+
+        const li = document.createElement("div");
+        li.className = "song";
+        li.appendChild(img);
+        li.innerHTML +=`${item.name}`; // (ID: ${item.id})`;
         const button = document.createElement("button");
         button.innerText = "Remove";
         button.addEventListener("click", () => {
@@ -300,8 +308,14 @@ function displayBlacklist() {
         blacklistItems.appendChild(li);
     });
     blacklist.artists.forEach((item) => {
-        const li = document.createElement("li");
-        li.innerText = `Artist: ${item.name} (ID: ${item.id})`;
+        const img = document.createElement("img");
+        img.draggable = false;
+        // img.src = item.images[0].url
+
+        const li = document.createElement("div");
+        li.className = "artist";
+        li.appendChild(img);
+        li.innerHTML += `${item.name}`; // (ID: ${item.id})`;
         const button = document.createElement("button");
         button.innerText = "Remove";
         button.addEventListener("click", () => {
@@ -312,8 +326,14 @@ function displayBlacklist() {
         blacklistItems.appendChild(li);
     });
     blacklist.albums.forEach((item) => {
-        const li = document.createElement("li");
-        li.innerText = `Album: ${item.name} (ID: ${item.id})`;
+        const img = document.createElement("img");
+        img.draggable = false;
+        // img.src = item.album.images[0].url
+
+        const li = document.createElement("div");
+        li.className = "album";
+        li.appendChild(img);
+        li.innerHTML += `${item.name}`; // (ID: ${item.id})`;
         const button = document.createElement("button");
         button.innerText = "Remove";
         button.addEventListener("click", () => {
