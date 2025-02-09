@@ -2,6 +2,8 @@ const clientId = "3c334ae39e734129a8a0533019ac7225"; // Replace with your client
 const params = new URLSearchParams(window.location.search);
 const code = params.get("code");
 
+let last_skipped_song_id;
+
 function getStoredAccessToken() {
     const stored = localStorage.getItem("accessToken");
     if (!stored || stored === "undefined") return null;
@@ -150,9 +152,12 @@ async function updateCurrentlyPlaying(token) {
                 blacklist.artists.some((item) => item.id === id)
             )
         ) {
-            await skipToNextSong(token);
-            // don't bother checking again, we'll check the next song on the next update to avoid rate limiting
-            populateCurrentlyPlaying(currentlyPlaying);
+            if (songId !== last_skipped_song_id) {
+                last_skipped_song_id = songId;
+                console.log("Skipped song", currentlyPlaying.item.name);
+                await skipToNextSong(token);
+            }
+            updateCurrentlyPlaying(token);
         } else {
             populateCurrentlyPlaying(currentlyPlaying);
         }
